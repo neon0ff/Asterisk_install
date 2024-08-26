@@ -70,7 +70,7 @@ cat "${cert_path}/privkey.pem" "${cert_path}/fullchain.pem" > "${output_dir}/ast
 echo "Серверный сертификат успешно создан и сохранен в ${output_dir}."
 
 # Выдача права на сертификаты Астериску
-sudo chown asterisk:asterisk asterisk*
+sudo chown asterisk:asterisk /etc/asterisk/keys/asterisk*
 
 # Заменяем содержимое файла /etc/asterisk/http.conf
 cat << EOF > /etc/asterisk/http.conf
