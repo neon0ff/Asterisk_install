@@ -209,7 +209,11 @@ config_file="/etc/asterisk/manager.conf"
 # Замена содержимого файла /etc/asterisk/manager.conf
 echo "$new_manager_conf" | sudo tee "$config_file" > /dev/null
 
-
+print_success "Username в manager.conf:"
+print_success "========================================"
+print_success "        ${section_name}
+print_success "========================================"
+print_success                                     
 print_success "Сгенерированный пароль в manager.conf:"
 print_success "========================================"
 print_success "        \033[1;32m$password\033[0m"
@@ -231,6 +235,19 @@ if [ -f "$rtp_file" ]; then
     print_success "Файл rtp.conf был успешно обновлен."
 else
     print_error "Файл rtp.conf не найден."
+    exit 1
+fi
+
+# Путь к файлу конфигурации
+modules_conf="/etc/asterisk/modules.conf"
+
+# Проверяем, существует ли файл
+if [ -f "$modules_conf" ]; then
+    # Добавляем строку noload => chan_sip.so после строки noload => chan_modem_i4l.so
+    sudo sed -i '/noload => chan_modem_i4l.so/a\noload => chan_sip.so' "$modules_conf"
+    print_success "Строка 'noload => chan_sip.so' успешно добавлена в modules.conf"
+else
+    print_error "[Файл modules.conf не найден."
     exit 1
 fi
 
