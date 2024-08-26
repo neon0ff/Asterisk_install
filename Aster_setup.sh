@@ -13,30 +13,6 @@ print_error() {
     echo -e "\033[0;31m$1\033[0m"
 }
 
-# Функция для анимации
-show_progress() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep "$pid")" ]; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "    \b\b\b\b"
-    wait $pid
-    return $?
-}
-
-# Пример установки пакета с подавлением вывода и анимацией
-install_package() {
-    local package_name=$1
-    echo "Установка $package_name..."
-    sudo apt install -y $package_name > /dev/null 2>&1 & show_progress
-    echo "Установка $package_name завершена."
-}
 
 # Запрашиваем данные у пользователя
 echo -n "Введите ваш домен сервера : "
