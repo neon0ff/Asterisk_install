@@ -1,7 +1,45 @@
 #!/bin/sh -e
 
+# Функции для цветного вывода сообщений
+print_success() {
+    echo -e "\033[0;32m$1\033[0m"
+}
+
+print_warning() {
+    echo -e "\033[0;33m$1\033[0m"
+}
+
+print_error() {
+    echo -e "\033[0;31m$1\033[0m"
+}
+
+# Функция для анимации
+show_progress() {
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep "$pid")" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+    wait $pid
+    return $?
+}
+
+# Пример установки пакета с подавлением вывода и анимацией
+install_package() {
+    local package_name=$1
+    echo "Установка $package_name..."
+    sudo apt install -y $package_name > /dev/null 2>&1 & show_progress
+    echo "Установка $package_name завершена."
+}
+
 # Запрашиваем данные у пользователя
-echo -n "Введите ваш домен: "
+echo -n "Введите ваш домен сервера : "
 read domain
 
 echo -n "Введите email для Certbot: "
@@ -16,17 +54,17 @@ read crm_domain
 
 # Подтверждение правильности введенных данных
 tput setaf 2  # Устанавливаем зеленый цвет
-echo "Вы ввели следующие данные:"
-echo "Домен: $domain"
-echo "Email: $email"
-echo "Ваш номер Астериска: $AsterNumber"
-echo "Ваш домен CRM: $crm_domain"
+print_warning "Вы ввели следующие данные:"
+print_success "Домен сервера: $domain"
+print_success "Email: $email"
+print_success "Ваш номер Астериска: $AsterNumber"
+print_success "Ваш домен CRM: $crm_domain"
 tput sgr0  # Сброс цвета
-echo -n "Все ли верно? (y/n): "
+print_warning -n "Все ли верно? (y/n): "
 read confirmation
 
 if [ "$confirmation" != "y" ]; then
-    echo "Скрипт был прерван пользователем."
+    print_error "Скрипт был прерван пользователем."
     exit 1
 fi
 
@@ -41,7 +79,7 @@ output_dir="/etc/asterisk/keys"
 
 # Проверяем наличие необходимых утилит
 if ! type certbot >/dev/null 2>&1; then
-    echo "Этот скрипт требует установки certbot."
+    print_error "Этот скрипт требует установки certbot."
     exit 1
 fi
 
@@ -50,14 +88,14 @@ sudo mkdir -p "${output_dir}"
 
 # Генерация серверного сертификата
 if [ -z "${domain}" ]; then
-    echo "Требуется указать домен для серверного сертификата."
+    print_error "Требуется указать домен для серверного сертификата."
     exit 1
 fi
 
 echo "Создание серверного SSL сертификата для домена ${domain} с email ${email}."
 sudo certbot certonly --standalone -d "${domain}" --email "${email}" --agree-tos --non-interactive
 if [ $? -ne 0 ]; then
-    echo "Не удалось создать серверный сертификат."
+    print_error "Не удалось создать серверный сертификат."
     exit 1
 fi
 
@@ -67,7 +105,7 @@ sudo cp "${cert_path}/fullchain.pem" "${output_dir}/asterisk.crt"
 sudo cp "${cert_path}/privkey.pem" "${output_dir}/asterisk.key"
 cat "${cert_path}/privkey.pem" "${cert_path}/fullchain.pem" > "${output_dir}/asterisk.pem"
 
-echo "Серверный сертификат успешно создан и сохранен в ${output_dir}."
+print_success "Серверный сертификат успешно создан и сохранен в ${output_dir}."
 
 # Выдача права на сертификаты Астериску
 sudo chown asterisk:asterisk /etc/asterisk/keys/asterisk*
@@ -87,7 +125,7 @@ tlsprivatekey=/etc/asterisk/keys/asterisk.key    ; path to private key file (*.p
 tlscafile=/etc/asterisk/keys/ca.crt
 EOF
 
-echo "Файл /etc/asterisk/http.conf был успешно обновлен."
+print_success "Файл /etc/asterisk/http.conf был успешно обновлен."
 
 # Выбор настроек под ооператора 
 # echo "Выберете оператора:"
@@ -99,36 +137,36 @@ echo "Файл /etc/asterisk/http.conf был успешно обновлен."
 # Переименовываем существующий файл pjsip.conf
 if [ -f /etc/asterisk/pjsip.conf ]; then
     sudo mv /etc/asterisk/pjsip.conf /etc/asterisk/pjsip.conf_backup
-    echo "Файл /etc/asterisk/pjsip.conf был переименован в /etc/asterisk/pjsip.conf_backup."
+    echo "Файл pjsip.conf был переименован в pjsip.conf_backup."
 else
-    echo "Файл /etc/asterisk/pjsip.conf не найден, пропускаем переименование."
+    print_warning "Файл /etc/asterisk/pjsip.conf не найден, пропускаем переименование."
 fi
 
 # Скачиваем новый файл pjsip.conf с GitHub
 sudo curl -o /etc/asterisk/pjsip.conf https://raw.githubusercontent.com/neon0ff/Asterisk_install/main/pjsip.conf
 
 if [ $? -eq 0 ]; then
-    echo "Новый файл pjsip.conf успешно загружен и сохранен в /etc/asterisk."
+    print_success "Новый файл pjsip.conf успешно загружен и сохранен в /etc/asterisk."
 else
-    echo "Ошибка при загрузке файла pjsip.conf."
+    print_error "Ошибка при загрузке файла pjsip.conf."
     exit 1
 fi
 
 # Переименовываем существующий файл extensions.conf
 if [ -f /etc/asterisk/extensions.conf ]; then
     sudo mv /etc/asterisk/extensions.conf /etc/asterisk/extensions.conf_backup
-    echo "Файл /etc/asterisk/extensions.conf был переименован в /etc/asterisk/extensions.conf_backup."
+    echo "Файл extensions.conf был переименован в extensions.conf_backup."
 else
-    echo "Файл /etc/asterisk/extensions.conf не найден, пропускаем переименование."
+    print_warning "Файл /etc/asterisk/extensions.conf не найден, пропускаем переименование."
 fi
 
 # Скачиваем новый файл extensions.conf с GitHub
 sudo curl -o /etc/asterisk/extensions.conf https://raw.githubusercontent.com/neon0ff/Asterisk_install/main/extensions.conf
 
 if [ $? -eq 0 ]; then
-    echo "Новый файл extensions.conf успешно загружен и сохранен в /etc/asterisk."
+    print_success "Новый файл extensions.conf успешно загружен и сохранен в /etc/asterisk."
 else
-    echo "Ошибка при загрузке файла extensions.conf."
+    print_error "Ошибка при загрузке файла extensions.conf."
     exit 1
 fi
 
@@ -138,25 +176,26 @@ new_mixmon_dir="/CallRecords/Aster${AsterNumber}/"
 
 if [ -f "$config_file" ]; then
     sudo sed -i "s|MIXMON_DIR *= *.*|MIXMON_DIR = ${new_mixmon_dir}|" "$config_file"
-    echo "Строка MIXMON_DIR в файле $config_file обновлена на: MIXMON_DIR = ${new_mixmon_dir}"
+    print_success "Строка MIXMON_DIR в файле extensions.conf обновлена"
 else
-    echo "Файл $config_file не найден."
+    print_error "Файл $config_file не найден."
     exit 1
 fi
 
 # Создаем новую папку
 if [ ! -d "$new_mixmon_dir" ]; then
     sudo mkdir -p "$new_mixmon_dir"
-    echo "Папка $new_mixmon_dir была успешно создана."
+    print_success "Папка $new_mixmon_dir была успешно создана."
 else
-    echo "Папка $new_mixmon_dir уже существует."
+    print_warning "Папка $new_mixmon_dir уже существует."
 fi
 
 # Заменяем строку с доменом CRM в файле /etc/asterisk/extensions.conf
 new_crm_url="https://${crm_domain}/v6_0/api/save-audio-request-call"
 sudo sed -i "s|same => n,System(curl -X POST \${CURL_DATA} .* > /tmp/curl_response.txt 2>/tmp/curl_error.txt)|same => n,System(curl -X POST \${CURL_DATA} ${new_crm_url} > /tmp/curl_response.txt 2>/tmp/curl_error.txt)|" "$config_file"
+sudo sed -i "s|same => n,Set(__CURL_STATUS=\${SHELL(curl -o /dev/null -Isw '%{http_code}\n' .*})|same => n,Set(__CURL_STATUS=\${SHELL(curl -o /dev/null -Isw '%{http_code}\n' ${new_crm_url})}|" "$config_file"
 
-echo "Строка с доменом CRM в файле $config_file обновлена на: same => n,System(curl -X POST \${CURL_DATA} ${new_crm_url} > /tmp/curl_response.txt 2>/tmp/curl_error.txt)"
+print_success "Строки в файле extensions.conf обновлены."
 
 # Формируем имя секции на основе введенного номера
 section_name="Aster${AsterNumber}"
@@ -196,12 +235,14 @@ config_file="/etc/asterisk/manager.conf"
 # Замена содержимого файла /etc/asterisk/manager.conf
 echo "$new_manager_conf" | sudo tee "$config_file" > /dev/null
 
-# Вывод пароля зеленым цветом
-tput setaf 2  # Устанавливаем зеленый цвет
-echo "Сгенерированный пароль в /etc/asterisk/manager.conf: $password"
-tput sgr0  # Сброс цвета
 
-echo "Файл /etc/asterisk/manager.conf был успешно обновлен."
+print_success "Сгенерированный пароль в manager.conf:"
+print_success "========================================"
+print_success "        \033[1;32m$password\033[0m"
+print_success "========================================"
+
+
+print_success "Файл manager.conf был успешно обновлен."
 
 # Новый конфиг для файла rtp.conf
 stunaddr_value="stun.${crm_domain}"
@@ -213,9 +254,9 @@ rtp_file="/etc/asterisk/rtp.conf"
 if [ -f "$rtp_file" ]; then
     sudo sed -i 's|; icesupport=false|icesupport=true|' "$rtp_file"
     sudo sed -i 's|; stunaddr=.*|stunaddr='"$stunaddr_value"'|' "$rtp_file"
-    echo "Файл $rtp_file был успешно обновлен."
+    print_success "Файл rtp.conf был успешно обновлен."
 else
-    echo "Файл $rtp_file не найден."
+    print_error "Файл rtp.conf не найден."
     exit 1
 fi
 
