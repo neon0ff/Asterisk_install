@@ -1,22 +1,30 @@
 #!/bin/sh -e
 
 # Запрашиваем данные у пользователя
-echo -n "Введите домен: "
+echo -n "Введите ваш домен: "
 read domain
+tput setaf 2  # Устанавливаем зеленый цвет
 echo "Ваш домен: $domain"
+tput sgr0  # Сброс цвета
 
 echo -n "Введите email для Certbot: "
 read email
+tput setaf 2  # Устанавливаем зеленый цвет
 echo "Ваш email: $email"
+tput sgr0  # Сброс цвета
 
 echo -n "Введите номер Астериска: "
 read AsterNumber
+tput setaf 2  # Устанавливаем зеленый цвет
 echo "Ваш номер Астериска: $AsterNumber"
+tput sgr0  # Сброс цвета
 
 # Запрашиваем домен CRM у пользователя
 echo -n "Введите домен CRM: "
 read crm_domain
+tput setaf 2  # Устанавливаем зеленый цвет
 echo "Ваш домен CRM: $crm_domain"
+tput sgr0  # Сброс цвета
 
 # Подтверждение правильности введенных данных
 echo "Вы ввели следующие данные:"
