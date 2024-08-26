@@ -211,9 +211,9 @@ echo "$new_manager_conf" | sudo tee "$config_file" > /dev/null
 
 print_success "Username в manager.conf:"
 print_success "========================================"
-print_success "        ${section_name}
+print_success "              $section_name"
 print_success "========================================"
-print_success                                     
+print_success "                                        "
 print_success "Сгенерированный пароль в manager.conf:"
 print_success "========================================"
 print_success "        \033[1;32m$password\033[0m"
