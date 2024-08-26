@@ -2,15 +2,15 @@
 
 # Функции для цветного вывода сообщений
 print_success() {
-    echo -e "\033[0;32m$1\033[0m"
+    echo "\033[0;32m$1\033[0m"
 }
 
 print_warning() {
-    echo -e "\033[0;33m$1\033[0m"
+    echo "\033[0;33m$1\033[0m"
 }
 
 print_error() {
-    echo -e "\033[0;31m$1\033[0m"
+    echo "\033[0;31m$1\033[0m"
 }
 
 
@@ -29,14 +29,12 @@ echo -n "Введите домен CRM: "
 read crm_domain
 
 # Подтверждение правильности введенных данных
-tput setaf 2  # Устанавливаем зеленый цвет
 print_warning "Вы ввели следующие данные:"
 print_success "Домен сервера: $domain"
 print_success "Email: $email"
 print_success "Ваш номер Астериска: $AsterNumber"
 print_success "Ваш домен CRM: $crm_domain"
-tput sgr0  # Сброс цвета
-print_warning -n "Все ли верно? (y/n): "
+echo -n "\e[33mВсе ли верно? (y/n): \e[0m"
 read confirmation
 
 if [ "$confirmation" != "y" ]; then
@@ -48,7 +46,7 @@ sudo apt update -y
 sudo apt install asterisk -y
 sudo mkdir /etc/asterisk/keys
 sudo chown asterisk:asterisk /etc/asterisk/keys
-sudo apt install certbot -y 
+sudo apt install certbot -y
 
 # Определяем параметры по умолчанию
 output_dir="/etc/asterisk/keys"
@@ -103,7 +101,7 @@ EOF
 
 print_success "Файл /etc/asterisk/http.conf был успешно обновлен."
 
-# Выбор настроек под ооператора 
+# Выбор настроек под ооператора
 # echo "Выберете оператора:"
 # echo "1) Plusofon"
 # echo "2) Mango"
