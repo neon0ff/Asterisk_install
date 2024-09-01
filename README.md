@@ -5,7 +5,7 @@ curl -o aster.sh https://raw.githubusercontent.com/neon0ff/Asterisk_install/main
 ```
 ### Делаем скрипт исполняемым
 ```bash
-sudo chmod +x aster.sh
+sudo chmod +x Aster_setup.sh
 ```
 ### Выполняем скрипт от SUDO
 ```bash
