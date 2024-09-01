@@ -11,4 +11,4 @@ sudo chmod +x Aster_setup.sh
 ```bash
 sudo ./aster.sh
 ```
-### Заполняем данные и после установки донастраиваеи pjsip.conf и extensions.conf
+### Заполняем данные и после установки донастраиваем pjsip.conf и extensions.conf
