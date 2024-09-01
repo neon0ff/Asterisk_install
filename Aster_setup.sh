@@ -257,13 +257,13 @@ sudo asterisk -rx 'core reload'
 
 sudo asterisk -rx 'http show status'
 
-print_warning "Заполнить данными pjsip.conf и extensions.conf?"
-read confirmation2
-
-if [ "$confirmation2" != "y" ]; then
-    print_error "Скрипт был прерван пользователем."
-    exit 1
-fi
-sudo curl -o data.sh https://raw.githubusercontent.com/neon0ff/Asterisk_install/main/Aster_setup_data.sh
-sudo chmod +x data.sh
-sudo ./data.sh
+#print_warning "Заполнить данными pjsip.conf и extensions.conf?"
+#read confirmation2
+#
+#if [ "$confirmation2" != "y" ]; then
+#    print_error "Скрипт был прерван пользователем."
+#    exit 1
+#fi
+#sudo curl -o data.sh https://raw.githubusercontent.com/neon0ff/Asterisk_install/main/Aster_setup_data.sh
+#sudo chmod +x data.sh
+#sudo ./data.sh
