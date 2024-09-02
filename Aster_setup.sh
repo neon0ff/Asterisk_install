@@ -160,8 +160,10 @@ fi
 if [ ! -d "$new_mixmon_dir" ]; then
     sudo mkdir -p "$new_mixmon_dir"
     print_success "Папка $new_mixmon_dir была успешно создана."
+    sudo chmod 777 -R /CallRecords* 
 else
     print_warning "Папка $new_mixmon_dir уже существует."
+    sudo chmod 777 -R /CallRecords* 
 fi
 
 # Заменяем строку с доменом CRM в файле /etc/asterisk/extensions.conf
