@@ -214,9 +214,14 @@ EOF
     # Запись данных в extensions.conf
     cat << EOF >> "$extensions_conf_path"
 
+[from-$plusofon_label]
+exten => ID,1,Playback(demo-congrats)
+exten => ID,n,Hangup
+
 [to-$plusofon_label]
 exten => _X.,1,Gosub(sub-record-check,s,1(out,\${EXTEN},force))
 exten => _X.,n,Dial(PJSIP/\${EXTEN}@$plusofon_label)
+
 
 EOF
 
