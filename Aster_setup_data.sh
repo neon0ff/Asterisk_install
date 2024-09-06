@@ -109,6 +109,32 @@ last_sip=$(grep -oP '\[16\K\d+' "$pjsip_conf_path" | sort -nr | head -n 1)
 next_plusofon=$((last_plusofon + 1))
 next_sip=$((last_sip + 1))
 
+# Функция для определения последнего номера plusofon в extensions.conf
+get_last_plusofon_number() {
+    grep -oP '\[from-plusofon\K\d+' "$extensions_conf_path" | sort -nr | head -n 1
+}
+
+# Функция для вставки новых секций в extensions.conf
+insert_new_sections() {
+    local file="$1"
+    local last_number="$2"
+    local new_number=$((last_number + 1))
+    
+    local from_section="[from-plusofon${new_number}]
+exten => ID,1,Playback(demo-congrats)
+exten => ID,n,Hangup"
+
+    local to_section="[to-plusofon${new_number}]
+exten => _X.,1,Gosub(sub-record-check,s,1(out,\${EXTEN},force))
+exten => _X.,n,Dial(PJSIP/\${EXTEN}@plusofon${new_number})"
+
+    # Вставка перед [send-filename]
+    sed -i "/^\[send-filename\]/i\\
+$from_section\n\
+$to_section\n" "$file"
+}
+
+# Основной цикл для обработки аккаунтов
 for account in "${accounts[@]}"; do
     login=$(echo $account | cut -d':' -f1)
     password=$(echo $account | cut -d':' -f2)
@@ -205,25 +231,9 @@ qualify_frequency=60
 
 EOF
 
-    # Проверка существования секции в extensions.conf
-    if grep -q "\[to-$plusofon_label\]" "$extensions_conf_path"; then
-        print_warning "Секция [to-$plusofon_label] уже существует в extensions.conf. Пропуск."
-        continue
-    fi
-
-    # Запись данных в extensions.conf
-    cat << EOF >> "$extensions_conf_path"
-
-[from-$plusofon_label]
-exten => ID,1,Playback(demo-congrats)
-exten => ID,n,Hangup
-
-[to-$plusofon_label]
-exten => _X.,1,Gosub(sub-record-check,s,1(out,\${EXTEN},force))
-exten => _X.,n,Dial(PJSIP/\${EXTEN}@$plusofon_label)
-
-
-EOF
+    # Определение последнего номера plusofon в extensions.conf и вставка новых секций
+    last_plusofon_ext=$(get_last_plusofon_number)
+    insert_new_sections "$extensions_conf_path" "$last_plusofon_ext"
 
     # Инкрементируем номера для следующей итерации
     next_plusofon=$((next_plusofon + 1))
