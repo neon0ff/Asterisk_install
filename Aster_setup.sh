@@ -101,13 +101,6 @@ EOF
 
 print_success "Файл /etc/asterisk/http.conf был успешно обновлен."
 
-# Выбор настроек под ооператора
-# echo "Выберете оператора:"
-# echo "1) Plusofon"
-# echo "2) Mango"
-# read operator
-# if operator = 1
-
 # Переименовываем существующий файл pjsip.conf
 if [ -f /etc/asterisk/pjsip.conf ]; then
     sudo mv /etc/asterisk/pjsip.conf /etc/asterisk/pjsip.conf_backup
